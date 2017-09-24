@@ -12,16 +12,18 @@
 
 	var _nbSamplePoints = 64;
 	var _squareSize = 250;
-	var _phi = 0.5 * (-1.0 + Math.sqrt(5.0));
+	var _phi = 0.5 * (-1.0 + Math.sqrt(5.0)); 	// 0.618 黄金分割值φ
 	var _angleRange = deg2Rad(45.0);
 	var _anglePrecision = deg2Rad(2.0);
 	var _halfDiagonal = Math.sqrt(_squareSize * _squareSize + _squareSize * _squareSize) * 0.5;
 	var _origin = { x: 0, y: 0 };
 
+	// 度转为弧度
 	function deg2Rad (d) {
 		return d * Math.PI / 180.0;
 	}
 
+	// 两点的距离
 	function getDistance (a, b) {
 		var dx = b.x - a.x;
 		var dy = b.y - a.y;
@@ -29,12 +31,14 @@
 		return Math.sqrt(dx * dx + dy * dy);
 	}
 
+	// 笔画的构造函数
 	function Stroke (points, name) {
 		this.points = points;
 		this.name = name;
 		this.processStroke();
 	}
 
+	// 笔画预处理：等距重采样、旋转为起点在形心的+X方向、缩放为方形、形心移到原点
 	Stroke.prototype.processStroke = function () {
 		this.points = this.resample();
 		this.setCentroid();
@@ -46,8 +50,8 @@
 		return this;
 	};
 
+	// 返回等距重采样后的点列
 	Stroke.prototype.resample = function () {
-
 		var localDistance, q;
 		var interval = this.strokeLength() / (_nbSamplePoints - 1);
 		var distance = 0.0;
@@ -78,6 +82,7 @@
 		return newPoints;
 	};
 
+	// 返回围绕形心旋转指定角度后的点列
 	Stroke.prototype.rotateBy = function (angle) {
 		var point;
 		var cos = Math.cos(angle);
@@ -96,6 +101,7 @@
 		return newPoints;
 	};
 
+	// 返回比例缩放到正方形范围(_squareSize x _squareSize)后的点列
 	Stroke.prototype.scaleToSquare = function () {
 		var point;
 		var newPoints = [];
@@ -130,6 +136,7 @@
 		return newPoints;
 	};
 
+	// 返回形心移到原点后的点列
 	Stroke.prototype.translateToOrigin = function (points) {
 		var point;
 		var newPoints = [];
@@ -146,6 +153,7 @@
 		return newPoints;
 	};
 
+	// 计算形心（所有点坐标的平均值）this.c
 	Stroke.prototype.setCentroid = function () {
 		var point;
 		this.c = {
@@ -166,10 +174,12 @@
 		return this;
 	};
 
+	// 特征角度（形心与起点的连线角度），-PI~PI
 	Stroke.prototype.indicativeAngle = function () {
 		return Math.atan2(this.c.y - this.points[0].y, this.c.x - this.points[0].x);
 	};
 
+	// 笔画长度
 	Stroke.prototype.strokeLength = function () {
 		var d = 0.0;
 
@@ -180,6 +190,7 @@
 		return d;
 	};
 
+	// 采用黄金二分法找到最佳旋转角度，返回此角度时与特定模板的平均距离偏差
 	Stroke.prototype.distanceAtBestAngle = function (pattern) {
 		var a = -_angleRange;
 		var b = _angleRange;
@@ -209,6 +220,7 @@
 		return Math.min(f1, f2);
 	};
 
+	// 点列旋转指定角度后与特定模板的平均距离偏差
 	Stroke.prototype.distanceAtAngle = function (pattern, angle) {
 		var strokePoints = this.rotateBy(angle);
 		var patternPoints = pattern.points;
