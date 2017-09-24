@@ -1,17 +1,16 @@
 (function (root, factory) {
-	
 	if (typeof define === 'function' && define.amd) {
 		define([], factory);
-	} 
+	}
 	else if (typeof module !== "undefined" && module.exports) {
 		module.exports = factory();
-	} 
+	}
 	else {
 		root.ShapeDetector = factory();
 	}
 }(this, function () {
 
-	var _nbSamplePoints;
+	var _nbSamplePoints = 64;
 	var _squareSize = 250;
 	var _phi = 0.5 * (-1.0 + Math.sqrt(5.0));
 	var _angleRange = deg2Rad(45.0);
@@ -20,27 +19,23 @@
 	var _origin = { x: 0, y: 0 };
 
 	function deg2Rad (d) {
-
 		return d * Math.PI / 180.0;
-	};
+	}
 
 	function getDistance (a, b) {
-
 		var dx = b.x - a.x;
 		var dy = b.y - a.y;
 
 		return Math.sqrt(dx * dx + dy * dy);
-	};
+	}
 
 	function Stroke (points, name) {
-
 		this.points = points;
 		this.name = name;
 		this.processStroke();
-	};
+	}
 
 	Stroke.prototype.processStroke = function () {
-
 		this.points = this.resample();
 		this.setCentroid();
 		this.points = this.rotateBy(-this.indicativeAngle());
@@ -70,7 +65,7 @@
 				newPoints.push(q);
 				this.points.splice(i, 0, q);
 				distance = 0.0;
-			} 
+			}
 			else {
 				distance += localDistance;
 			}
@@ -84,7 +79,6 @@
 	};
 
 	Stroke.prototype.rotateBy = function (angle) {
-
 		var point;
 		var cos = Math.cos(angle);
 		var sin = Math.sin(angle);
@@ -103,9 +97,8 @@
 	};
 
 	Stroke.prototype.scaleToSquare = function () {
-
 		var point;
-		var newPoints = []
+		var newPoints = [];
 		var box = {
 			minX: +Infinity,
 			maxX: -Infinity,
@@ -138,7 +131,6 @@
 	};
 
 	Stroke.prototype.translateToOrigin = function (points) {
-
 		var point;
 		var newPoints = [];
 		
@@ -155,7 +147,6 @@
 	};
 
 	Stroke.prototype.setCentroid = function () {
-		
 		var point;
 		this.c = {
 			x: 0.0,
@@ -176,12 +167,10 @@
 	};
 
 	Stroke.prototype.indicativeAngle = function () {
-
 		return Math.atan2(this.c.y - this.points[0].y, this.c.x - this.points[0].x);
 	};
 
 	Stroke.prototype.strokeLength = function () {
-		
 		var d = 0.0;
 
 		for (var i = 1; i < this.points.length; i++) {
@@ -192,7 +181,6 @@
 	};
 
 	Stroke.prototype.distanceAtBestAngle = function (pattern) {
-		
 		var a = -_angleRange;
 		var b = _angleRange;
 		var x1 = _phi * a + (1.0 - _phi) * b;
@@ -208,7 +196,7 @@
 				f2 = f1;
 				x1 = _phi * a + (1.0 - _phi) * b;
 				f1 = this.distanceAtAngle(pattern, x1);
-			} 
+			}
 			else {
 				a = x1;
 				x1 = x2;
@@ -222,7 +210,6 @@
 	};
 
 	Stroke.prototype.distanceAtAngle = function (pattern, angle) {
-
 		var strokePoints = this.rotateBy(angle);
 		var patternPoints = pattern.points;
 		var d = 0.0;
@@ -235,7 +222,6 @@
 	};
 
 	function ShapeDetector (patterns, options) {
-
 		options = options || {};
 		this.threshold = options.threshold || 0;
 		_nbSamplePoints = options.nbSamplePoints || 64;
@@ -339,17 +325,13 @@
 	];
 
 	ShapeDetector.prototype.spot = function (points, patternName) {
-
-		if (patternName == null) {
-			patternName = '';
-		}
-
 		var distance, pattern, score;
 		var stroke = new Stroke(points);
 		var bestDistance = +Infinity;
 		var bestPattern = null;
 		var bestScore = 0;
 
+		patternName = patternName || '';
 		for (var i = 0; i < this.patterns.length; i++) {
 			pattern = this.patterns[i];
 
@@ -369,7 +351,6 @@
 	};
 
 	ShapeDetector.prototype.learn = function (name, points) {
-
 		return this.patterns.push(new Stroke(points, name));
 	};
 
